@@ -81,7 +81,7 @@ function shorturlfe_show_copy_button(bool $action=true):string {
 		if($action){	// if action needed (when shown in front end)
 			$onclick = "onclick='shorturlfe.copyToClipboard()'";
 		}
-		$ret = "<button type='button' id='short-url-fe-button' class='short-url-fe-button $buttonclass' $onclick>".esc_html($buttontext)."</button>";
+		$ret = "<button type='button' id='short-url-fe-button' class='short-url-fe-button ".esc_html($buttonclass)."' $onclick>".esc_html($buttontext)."</button>";
 	}
 	return $ret;
 }
@@ -93,9 +93,13 @@ function shorturlfe_show_copy_button(bool $action=true):string {
  * @param string $showshorturlfe
  * @return string
  */
-function suf_show_short_url_fe(string $showshorturlfe):string {
+function shorturlfe_show_short_url_fe(string $showshorturlfe):string {
 	$options = get_option('shorturlfe_options');
 	$showFor = $options['shorturlfe_show_for'];
+	// If show short URL for:
+	// 0 = All users
+	// 1 = Logged users and user is logged
+	// 2 = Logged users that can edit current post and user is logged and user can edit current post
 	if($showFor == 0 || ($showFor == 1 && is_user_logged_in()) || ($showFor == 2 && is_user_logged_in() && current_user_can( 'edit_post' ))){ 
 		$shorturlfe_posttitle = $options['shorturlfe_title'];
 		$shorturlfe_pagetitle = $options['shorturlfe_page_title'];
@@ -115,9 +119,9 @@ function suf_show_short_url_fe(string $showshorturlfe):string {
 /**
  * @category Action
  */
-add_filter('the_content', 'suf_show_short_url_fe');
+add_filter('the_content', 'shorturlfe_show_short_url_fe');
 
-function suf_load_resources() {
+function shorturlfe_load_resources() {
 	$options = get_option('shorturlfe_options');
 	if ( isset($options['copy_url_button']) ) {
 		wp_enqueue_script('suf-scripts', plugins_url('/js/scripts.js', __FILE__));
@@ -128,9 +132,9 @@ function suf_load_resources() {
 /**
  * @category Action
  */
-add_action('wp_enqueue_scripts', 'suf_load_resources');
+add_action('wp_enqueue_scripts', 'shorturlfe_load_resources');
 
-function suf_load_resources_admin() {
+function shorturlfe_load_resources_admin() {
 	$options = get_option('shorturlfe_options');
 	if ( isset($options['copy_url_button']) ) {
 		wp_enqueue_script('suf-scripts', plugins_url('/js/scripts.js', __FILE__));
@@ -138,7 +142,7 @@ function suf_load_resources_admin() {
 	wp_enqueue_style('suf-styles', plugins_url('/css/admin.css', __FILE__));
 }
 
-add_action('admin_enqueue_scripts', 'suf_load_resources_admin');
+add_action('admin_enqueue_scripts', 'shorturlfe_load_resources_admin');
 
 // Set-up Action and Filter Hooks
 register_activation_hook(__FILE__, 'shorturlfe_add_defaults');
@@ -351,10 +355,10 @@ function shorturlfe_validate_options(array $input):array {
 function shorturlfe_plugin_action_links(array $links, string $file ):array {
 
 	if ( $file == plugin_basename( __FILE__ ) ) {
-		$shorturlfe_links1 = '<a href="'.get_admin_url().'options-general.php?page=short-url-fe/short-url-fe.php" title="Short URL FE Settings Page">'.__('Settings').'</a>';
+		$shorturlfe_links1 = '<a href="'.get_admin_url().'options-general.php?page=short-url-fe/short-url-fe.php">'.__('Settings').'</a>';
 		
 		// make the 'Settings' link appear first
-		\array_unshift( $links, $shorturlfe_links1/*, $shorturlfe_links2*/ );
+		\array_unshift( $links, $shorturlfe_links1);
 	}
 	return $links;
 }
